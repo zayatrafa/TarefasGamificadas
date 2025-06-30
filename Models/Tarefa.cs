@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace TarefasGamificadas
+﻿namespace TarefasGamificadas.Models
 {
     internal class Tarefa
     {

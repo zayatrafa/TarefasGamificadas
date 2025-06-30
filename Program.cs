@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using TarefasGamificadas.Models;
+using TarefasGamificadas.Utils;
 
 namespace TarefasGamificadas
 {
@@ -25,13 +27,9 @@ namespace TarefasGamificadas
                 Console.WriteLine("5 - Verificar tarefas atrasadas");
                 Console.WriteLine("6 - Ver meus pontos");
                 Console.WriteLine("0 - Sair");
-                Console.Write("Escolha uma opção: ");
 
                 // Leitura da opção
-                if (!int.TryParse(Console.ReadLine(), out opcao))
-                {
-                    opcao = -1;
-                }
+                opcao = EntradaUtils.LerInteiro("Escolha uma opção: ", 0, 6);
 
                 Console.Clear();
 
@@ -73,26 +71,15 @@ namespace TarefasGamificadas
         static void CriarUsuario()
         {
             string nome;
-            do
-            {
-                Console.Write("Digite o nome do novo usuário: ");
-                nome = Console.ReadLine();
-
-                if (string.IsNullOrWhiteSpace(nome))
-                {
-                    Console.WriteLine("Nome inválido. Por favor, tente novamente.");
-                }
-            } while (string.IsNullOrWhiteSpace(nome));
+            nome = EntradaUtils.LerTexto("Digite o nome do novo usuário: ");
 
             usuarios.Add(new Usuario(nome));
             Console.WriteLine("Usuário criado com sucesso!");
         }
 
-
         static void LogarUsuario()
         {
-            Console.Write("Digite o nome do usuário: ");
-            string nome = Console.ReadLine();
+            string nome = EntradaUtils.LerTexto("Digite o nome do usuário: ");
             usuarioLogado = usuarios.Find(u => u.Nome == nome);
 
             if (usuarioLogado != null)
@@ -109,19 +96,24 @@ namespace TarefasGamificadas
                 return;
             }
 
-            Console.Write("Nome da tarefa: ");
-            string nomeTarefa = Console.ReadLine();
+            string nomeTarefa = EntradaUtils.LerTexto("Nome da tarefa: ");
 
-            Console.Write("Quantos pontos vale? ");
-            int pontos = int.Parse(Console.ReadLine());
+            int pontos = EntradaUtils.LerInteiro("Quantos pontos vale? ");
 
-            Console.Write("Recorrência (em dias): ");
-            int recorrencia = int.Parse(Console.ReadLine());
+            int recorrencia = EntradaUtils.LerInteiro("Recorrência (em dias): ");
 
-            usuarioLogado.Tarefas.Add(new Tarefa(nomeTarefa, usuarioLogado, pontos, recorrencia));
-
-            Console.WriteLine("Tarefa adicionada com sucesso!");
+            try
+            {
+                var tarefa = new Tarefa(nomeTarefa, usuarioLogado, pontos, recorrencia);
+                usuarioLogado.Tarefas.Add(tarefa);
+                Console.WriteLine("Tarefa adicionada com sucesso!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ocorreu um erro ao adicionar a tarefa: {ex.Message}");
+            }
         }
+
 
         static void ConcluirTarefa()
         {
@@ -143,18 +135,11 @@ namespace TarefasGamificadas
                 Console.WriteLine($"{i + 1} - {usuarioLogado.Tarefas[i].Nome}");
             }
 
-            Console.Write("Escolha a tarefa que deseja concluir: ");
-            int escolha = int.Parse(Console.ReadLine()) - 1;
+            int escolha = EntradaUtils.LerInteiro("Escolha a tarefa que deseja concluir: ");
 
-            if (escolha >= 0 && escolha < usuarioLogado.Tarefas.Count)
-            {
-                usuarioLogado.Tarefas[escolha].MarcarComoConcluida();
-                Console.WriteLine("Tarefa concluída e pontos adicionados!");
-            }
-            else
-            {
-                Console.WriteLine("Opção inválida.");
-            }
+            usuarioLogado.Tarefas[escolha-1].MarcarComoConcluida();
+            Console.WriteLine("Tarefa concluída e pontos adicionados!");
+
         }
 
         static void VerificarAtrasadas()
@@ -191,4 +176,6 @@ namespace TarefasGamificadas
             Console.WriteLine($"{usuarioLogado.Nome} tem {usuarioLogado.PontuacaoTotal} pontos.");
         }
     }
+
 }
+
