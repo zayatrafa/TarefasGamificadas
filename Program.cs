@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TarefasGamificadas.Models;
 using TarefasGamificadas.Utils;
 
@@ -80,7 +81,7 @@ namespace TarefasGamificadas
         static void LogarUsuario()
         {
             string nome = EntradaUtils.LerTexto("Digite o nome do usuário: ");
-            usuarioLogado = usuarios.Find(u => u.Nome == nome);
+            usuarioLogado = usuarios.FirstOrDefault(u => u.Nome == nome);
 
             if (usuarioLogado != null)
                 Console.WriteLine($"Logado como {usuarioLogado.Nome}");
@@ -113,7 +114,6 @@ namespace TarefasGamificadas
                 Console.WriteLine($"Ocorreu um erro ao adicionar a tarefa: {ex.Message}");
             }
         }
-
 
         static void ConcluirTarefa()
         {
