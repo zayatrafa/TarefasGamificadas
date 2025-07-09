@@ -1,40 +1,37 @@
-﻿namespace TarefasGamificadas.Models
-{
-    internal class Tarefa
-    {
-        // Nome da tarefa (ex: "Lavar louça")
-        public string Nome { get; set; }
+﻿using System;
+using System.Text.Json.Serialization;
 
-        // Usuário responsável por essa tarefa
+namespace TarefasGamificadas.Models
+{
+    public class Tarefa
+    {
+        public string Nome { get; set; }
+        public int Pontos { get; set; }
+        public int RecorrenciaDias { get; set; }
+        public DateTime UltimaExecucao { get; set; }
+        public Guid ResponsavelId { get; set; } 
+
+        [JsonIgnore]  // Ignorar na serialização
         public Usuario Responsavel { get; set; }
 
-        // Pontos atribuídos à tarefa
-        public int Pontos { get; set; }
+        public Tarefa() { }
 
-        // Recorrência em dias
-        public int RecorrenciaDias { get; set; }
-
-        // Última data de execução da tarefa
-        public DateTime UltimaExecucao { get; set; }
-
-        // Construtor
         public Tarefa(string nome, Usuario responsavel, int pontos, int recorrenciaDias)
         {
             Nome = nome;
             Responsavel = responsavel;
+            ResponsavelId = responsavel.Id;
             Pontos = pontos;
             RecorrenciaDias = recorrenciaDias;
-            UltimaExecucao = DateTime.MinValue; // nunca foi feita
+            UltimaExecucao = DateTime.MinValue;
         }
 
-        // Marca a tarefa como concluída e dá pontos ao usuário
         public void MarcarComoConcluida()
         {
             UltimaExecucao = DateTime.Now;
-            Responsavel.AdicionarPontos(Pontos); // soma pontos ao responsável
+            Responsavel.AdicionarPontos(Pontos);
         }
 
-        // Verifica se a tarefa está atrasada
         public bool EstaAtrasada()
         {
             return (DateTime.Now - UltimaExecucao).TotalDays > RecorrenciaDias;

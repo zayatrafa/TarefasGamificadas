@@ -1,19 +1,21 @@
-﻿
+﻿using System;
+using System.Collections.Generic;
+
 namespace TarefasGamificadas.Models
 {
-    internal class Usuario
+    public class Usuario
     {
+        public Guid Id { get; set; } = Guid.NewGuid(); 
         public string Nome { get; set; }
-        public int PontuacaoTotal { get; set; }
+        public int PontuacaoTotal { get; set; } = 0;
+        public List<Tarefa> Tarefas { get; set; } = new List<Tarefa>();
 
-        // Lista de tarefas desse usuário
-        public List<Tarefa> Tarefas { get; set; }
+        // Construtor sem parâmetros - necessário para desserialização
+        public Usuario() {}
 
         public Usuario(string nome)
         {
             Nome = nome;
-            PontuacaoTotal = 0;
-            Tarefas = new List<Tarefa>();
         }
 
         public void AdicionarPontos(int pontos)

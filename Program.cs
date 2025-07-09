@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using TarefasGamificadas.Models;
 using TarefasGamificadas.Utils;
+using System.Text.Json;
+using System.IO;
+
 
 namespace TarefasGamificadas
 {
     internal class Program
     {
+        static readonly string pastaDados = Path.Combine(Directory.GetCurrentDirectory(), "Data");
+        static readonly string caminhoArquivo = Path.Combine(pastaDados, "usuarios.json");
+
         // Lista de usuários do sistema
         static List<Usuario> usuarios = new List<Usuario>();
 
@@ -15,6 +21,12 @@ namespace TarefasGamificadas
         static Usuario? usuarioLogado = null;
 
         static void Main(string[] args)
+        {
+            CarregarDados();
+            Menu();
+        }
+
+        static void Menu()
         {
             int opcao;
             do
@@ -76,6 +88,8 @@ namespace TarefasGamificadas
 
             usuarios.Add(new Usuario(nome));
             Console.WriteLine("Usuário criado com sucesso!");
+
+            SalvarDados();
         }
 
         static void LogarUsuario()
@@ -113,6 +127,8 @@ namespace TarefasGamificadas
             {
                 Console.WriteLine($"Ocorreu um erro ao adicionar a tarefa: {ex.Message}");
             }
+
+            SalvarDados();
         }
 
         static void ConcluirTarefa()
@@ -137,9 +153,10 @@ namespace TarefasGamificadas
 
             int escolha = EntradaUtils.LerInteiro("Escolha a tarefa que deseja concluir: ");
 
-            usuarioLogado.Tarefas[escolha-1].MarcarComoConcluida();
+            usuarioLogado.Tarefas[escolha - 1].MarcarComoConcluida();
             Console.WriteLine("Tarefa concluída e pontos adicionados!");
 
+            SalvarDados();
         }
 
         static void VerificarAtrasadas()
@@ -175,6 +192,66 @@ namespace TarefasGamificadas
 
             Console.WriteLine($"{usuarioLogado.Nome} tem {usuarioLogado.PontuacaoTotal} pontos.");
         }
+
+        static void SalvarDados()
+        {
+            try
+            {
+                
+                Directory.CreateDirectory(pastaDados);  // cria a pasta se não existir
+
+                string json = JsonSerializer.Serialize(usuarios, new JsonSerializerOptions { WriteIndented = true });
+                File.WriteAllText(caminhoArquivo, json);
+                Console.WriteLine($"Arquivo salvo em: {caminhoArquivo}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao salvar dados: {ex.Message}");
+            }
+        }
+
+        static void CarregarDados()
+        {
+            try
+            {
+                if (File.Exists(caminhoArquivo))
+                {
+                    
+                    string json = File.ReadAllText(caminhoArquivo);
+                    usuarios = JsonSerializer.Deserialize<List<Usuario>>(json) ?? new List<Usuario>();
+
+                    Console.WriteLine("Usuários carregados:");
+                    foreach (var u in usuarios)
+                    {
+                        Console.WriteLine($"- {u.Nome} (Id: {u.Id})");
+                    }
+
+
+                    // Reconectar Responsavel nas tarefas
+                    foreach (var usuario in usuarios)
+                    {
+                        foreach (var tarefa in usuario.Tarefas)
+                        {
+                            tarefa.Responsavel = usuarios.FirstOrDefault(u => u.Id == tarefa.ResponsavelId);
+                        }
+                    }
+
+                    Console.WriteLine("Dados carregados com sucesso.");
+                }
+                else
+                {
+                    usuarios = new List<Usuario>();
+                    Console.WriteLine("Nenhum arquivo de dados encontrado. Lista iniciada vazia.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao carregar dados: {ex.Message}");
+                usuarios = new List<Usuario>();
+            }
+        }
+
+
     }
 
 }
