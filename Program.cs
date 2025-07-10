@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Text.Json;
 using TarefasGamificadas.Models;
 using TarefasGamificadas.Utils;
-using System.Text.Json;
-using System.IO;
 
 
 namespace TarefasGamificadas
@@ -39,10 +35,11 @@ namespace TarefasGamificadas
                 Console.WriteLine("4 - Concluir uma tarefa");
                 Console.WriteLine("5 - Verificar tarefas atrasadas");
                 Console.WriteLine("6 - Ver meus pontos");
+                Console.WriteLine("7 - Ver as minhas conquistas");
                 Console.WriteLine("0 - Sair");
 
                 // Leitura da opção
-                opcao = EntradaUtils.LerInteiro("Escolha uma opção: ", 0, 6);
+                opcao = EntradaUtils.LerInteiro("Escolha uma opção: ", 0, 7);
 
                 Console.Clear();
 
@@ -66,6 +63,9 @@ namespace TarefasGamificadas
                         break;
                     case 6:
                         VerPontos();
+                        break;
+                    case 7:
+                        ConsultarProgressoConquista(usuarioLogado);
                         break;
                     case 0:
                         Console.WriteLine("Saindo...");
@@ -156,6 +156,8 @@ namespace TarefasGamificadas
             usuarioLogado.Tarefas[escolha - 1].MarcarComoConcluida();
             Console.WriteLine("Tarefa concluída e pontos adicionados!");
 
+            VerificaSeCompletouConquista(usuarioLogado);
+
             SalvarDados();
         }
 
@@ -197,7 +199,7 @@ namespace TarefasGamificadas
         {
             try
             {
-                
+
                 Directory.CreateDirectory(pastaDados);  // cria a pasta se não existir
 
                 string json = JsonSerializer.Serialize(usuarios, new JsonSerializerOptions { WriteIndented = true });
@@ -216,7 +218,7 @@ namespace TarefasGamificadas
             {
                 if (File.Exists(caminhoArquivo))
                 {
-                    
+
                     string json = File.ReadAllText(caminhoArquivo);
                     usuarios = JsonSerializer.Deserialize<List<Usuario>>(json) ?? new List<Usuario>();
 
@@ -251,7 +253,26 @@ namespace TarefasGamificadas
             }
         }
 
+        static void VerificaSeCompletouConquista(Usuario u)
+        {
+            foreach (var conquista in ListaDeConquistas.Todas)
+            {
+                if (u.PontuacaoTotal >= conquista.PontuacaoNecessaria && !(u.ConquistasDesbloqueadas.Any(c => c.Codigo == conquista.IdConquista.ToString())))
+                {
+                    u.ConquistasDesbloqueadas.Add(new ConquistaDesbloqueada(conquista.IdConquista.ToString(), conquista.Nome));
+                    Console.WriteLine($"!!! Conquista desbloqueada: {conquista.Nome} !!!");
+                }
+            }
+        }
 
+        static void ConsultarProgressoConquista(Usuario u)
+        {
+            Console.WriteLine($"O usuario {u.Nome} já desbloqueou as seguintes conquistas: ");
+            foreach (var conquista in u.ConquistasDesbloqueadas)
+            {
+                Console.WriteLine($"Em {conquista.DataDesbloqueio}: {conquista.Nome}");
+            }
+        }
     }
 
 }
